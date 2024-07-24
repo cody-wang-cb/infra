@@ -405,6 +405,7 @@ func (s *Server) HandleRPC(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("x-served-by", servedBy)
 	}
 	setCacheHeader(w, cached)
+	fmt.Println("handle RPC: ", r, backendRes[0])
 	writeRPCRes(ctx, w, backendRes[0])
 }
 
@@ -762,6 +763,7 @@ func writeRPCError(ctx context.Context, w http.ResponseWriter, id json.RawMessag
 	} else {
 		res = NewRPCErrorRes(id, ErrInternal)
 	}
+	fmt.Println("write RPC error: ", err, res)
 	writeRPCRes(ctx, w, res)
 }
 
