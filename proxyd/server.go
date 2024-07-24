@@ -767,6 +767,7 @@ func writeRPCError(ctx context.Context, w http.ResponseWriter, id json.RawMessag
 
 func writeRPCRes(ctx context.Context, w http.ResponseWriter, res *RPCRes) {
 	statusCode := 200
+	fmt.Println(res)
 	if res.IsError() && res.Error.HTTPErrorCode != 0 {
 		statusCode = res.Error.HTTPErrorCode
 	}
@@ -780,7 +781,7 @@ func writeRPCRes(ctx context.Context, w http.ResponseWriter, res *RPCRes) {
 		RecordRPCError(ctx, BackendProxyd, MethodUnknown, err)
 		return
 	}
-	httpResponseCodesTotal.WithLabelValues(strconv.Itoa(statusCode)).Inc()
+	httpResponseCodesTotal.WithLabelValues(strconv.Itoa(statusCode), ).Inc()
 	RecordResponsePayloadSize(ctx, ww.Len)
 }
 
