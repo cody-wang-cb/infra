@@ -405,7 +405,11 @@ func (s *Server) HandleRPC(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("x-served-by", servedBy)
 	}
 	setCacheHeader(w, cached)
-	fmt.Println("handle RPC: ", rawBody, backendRes[0], servedBy)
+	parsedReq, err := ParseRPCReq(rawBody)
+	if err != nil {
+		log.Info("error parsing RPC call", "source", "rpc", "err", err)
+	}
+	fmt.Println("handle RPC: ", parsedReq, backendRes[0], servedBy)
 	writeRPCRes(ctx, w, backendRes[0])
 }
 

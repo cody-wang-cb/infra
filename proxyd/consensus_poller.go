@@ -744,6 +744,7 @@ func (cp *ConsensusPoller) FilterCandidates(backends []*Backend) map[*Backend]*b
 	for _, be := range backends {
 
 		bs := cp.GetBackendState(be)
+		fmt.Println(bs)
 		if be.forcedCandidate {
 			candidates[be] = bs
 			continue
