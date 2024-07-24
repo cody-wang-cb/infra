@@ -405,7 +405,7 @@ func (s *Server) HandleRPC(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("x-served-by", servedBy)
 	}
 	setCacheHeader(w, cached)
-	fmt.Println("handle RPC: ", r, backendRes[0])
+	fmt.Println("handle RPC: ", rawBody, backendRes[0], servedBy)
 	writeRPCRes(ctx, w, backendRes[0])
 }
 
