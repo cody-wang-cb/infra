@@ -409,7 +409,16 @@ func (s *Server) HandleRPC(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Info("error parsing RPC call", "source", "rpc", "err", err)
 	}
-	fmt.Println("handle RPC: ", parsedReq, backendRes[0], servedBy)
+
+	// Define the expected parameters struct
+    var params []interface{}
+    err = json.Unmarshal(parsedReq.Params, &params)
+    if err != nil {
+        fmt.Println("Error unmarshaling params:", err)
+        return
+    }
+	fmt.Println("params: ", params)
+	fmt.Println("handle RPC: ", parsedReq, backendRes[0], servedBy, GetReqID(ctx))
 	writeRPCRes(ctx, w, backendRes[0])
 }
 

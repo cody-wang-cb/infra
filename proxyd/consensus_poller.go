@@ -744,7 +744,10 @@ func (cp *ConsensusPoller) FilterCandidates(backends []*Backend) map[*Backend]*b
 	for _, be := range backends {
 
 		bs := cp.GetBackendState(be)
-		fmt.Println(bs)
+		// print all fields in bs
+		fmt.Println("bs name: ", be.Name)
+		fmt.Println("bs latest block: ", bs.latestBlockNumber)
+		fmt.Println("bs latest block hash: ", bs.latestBlockHash)
 		if be.forcedCandidate {
 			candidates[be] = bs
 			continue

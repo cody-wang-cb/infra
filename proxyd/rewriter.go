@@ -3,6 +3,7 @@ package proxyd
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -118,6 +119,7 @@ func rewriteParam(rctx RewriteContext, req *RPCReq, res *RPCRes, pos int, requir
 			}
 		} else {
 			val, rw, err = rewriteTagBlockNumberOrHash(rctx, bnh)
+			fmt.Println("val: ", val)
 			if err != nil {
 				return RewriteOverrideError, err
 			}
@@ -286,6 +288,9 @@ func rewriteTagBlockNumberOrHash(rctx RewriteContext, current *rpc.BlockNumberOr
 	if current.BlockNumber == nil {
 		return current, false, nil
 	}
+
+	fmt.Println("rctx: ", rctx)
+	fmt.Println("current: ", current)
 
 	switch *current.BlockNumber {
 	case rpc.PendingBlockNumber,
