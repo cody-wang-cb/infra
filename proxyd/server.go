@@ -780,8 +780,8 @@ func writeRPCRes(ctx context.Context, w http.ResponseWriter, res *RPCRes) {
 		RecordRPCError(ctx, BackendProxyd, MethodUnknown, err)
 		return
 	}
-	fmt.Println(enc)
-	fmt.Println(statusCode)
+	// print everything in one line
+	fmt.Printf("%v %v\n", enc, statusCode)
 	httpResponseCodesTotal.WithLabelValues(strconv.Itoa(statusCode), ).Inc()
 	RecordResponsePayloadSize(ctx, ww.Len)
 }
