@@ -3,9 +3,9 @@ package proxyd
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -300,7 +300,7 @@ func rewriteTagBlockNumberOrHash(rctx RewriteContext, current *rpc.BlockNumberOr
 		return &bn, true, nil
 	case rpc.LatestBlockNumber:
 		bn := rpc.BlockNumberOrHashWithNumber(rpc.BlockNumber(rctx.latest))
-		fmt.Println("update latest", "bn: ", bn, "rctx.latest: ", rctx.latest, "current: ", current)
+		log.Info("update latest", "bn: ", bn, "rctx.latest: ", rctx.latest, "current: ", current)
 		return &bn, true, nil
 	default:
 		if current.BlockNumber.Int64() > int64(rctx.latest) {
