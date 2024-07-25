@@ -119,7 +119,6 @@ func rewriteParam(rctx RewriteContext, req *RPCReq, res *RPCRes, pos int, requir
 			}
 		} else {
 			val, rw, err = rewriteTagBlockNumberOrHash(rctx, bnh)
-			fmt.Println("val: ", val)
 			if err != nil {
 				return RewriteOverrideError, err
 			}
@@ -289,9 +288,6 @@ func rewriteTagBlockNumberOrHash(rctx RewriteContext, current *rpc.BlockNumberOr
 		return current, false, nil
 	}
 
-	fmt.Println("rctx: ", rctx)
-	fmt.Println("current: ", current)
-
 	switch *current.BlockNumber {
 	case rpc.PendingBlockNumber,
 		rpc.EarliestBlockNumber:
@@ -304,6 +300,7 @@ func rewriteTagBlockNumberOrHash(rctx RewriteContext, current *rpc.BlockNumberOr
 		return &bn, true, nil
 	case rpc.LatestBlockNumber:
 		bn := rpc.BlockNumberOrHashWithNumber(rpc.BlockNumber(rctx.latest))
+		fmt.Println("update latest", "bn: ", bn, "rctx.latest: ", rctx.latest, "current: ", current)
 		return &bn, true, nil
 	default:
 		if current.BlockNumber.Int64() > int64(rctx.latest) {

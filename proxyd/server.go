@@ -417,8 +417,7 @@ func (s *Server) HandleRPC(w http.ResponseWriter, r *http.Request) {
         fmt.Println("Error unmarshaling params:", err)
         return
     }
-	fmt.Println("params: ", params)
-	fmt.Println("handle RPC: ", parsedReq, backendRes[0], servedBy, GetReqID(ctx))
+	fmt.Println("handle RPC", "params", params, "method", parsedReq.Method, "req_id", GetReqID(ctx), "res", backendRes[0], "servedBy", servedBy)
 	writeRPCRes(ctx, w, backendRes[0])
 }
 
