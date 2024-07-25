@@ -729,6 +729,7 @@ type BackendGroup struct {
 	Consensus        *ConsensusPoller
 	FallbackBackends map[string]bool
 	routingStrategy  RoutingStrategy
+	DisableOverwrite bool
 }
 
 func (bg *BackendGroup) GetRoutingStrategy() RoutingStrategy {
@@ -770,7 +771,7 @@ func (bg *BackendGroup) Forward(ctx context.Context, rpcReqs []*RPCReq, isBatch 
 	// When routing_strategy is set to `consensus_aware` the backend group acts as a load balancer
 	// serving traffic from any backend that agrees in the consensus group
 	// We also rewrite block tags to enforce compliance with consensus
-	if bg.Consensus != nil {
+	if bg.Consensus != nil && !bg.DisableOverwrite {
 		rpcReqs, overriddenResponses = bg.OverwriteConsensusResponses(rpcReqs, overriddenResponses, rewrittenReqs)
 	}
 

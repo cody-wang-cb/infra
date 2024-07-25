@@ -229,6 +229,7 @@ func Start(config *Config) (*Server, func(), error) {
 			WeightedRouting:  bg.WeightedRouting,
 			FallbackBackends: fallbackBackends,
 			routingStrategy:  bg.RoutingStrategy,
+			DisableOverwrite: bg.DisableOverwrite,
 		}
 	}
 

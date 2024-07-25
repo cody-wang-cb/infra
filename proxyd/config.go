@@ -153,6 +153,7 @@ type BackendGroupConfig struct {
 	WeightedRouting bool `toml:"weighted_routing"`
 
 	RoutingStrategy RoutingStrategy `toml:"routing_strategy"`
+	DisableOverwrite bool `toml:"disable_overwrite"`
 
 	/*
 		Deprecated: Use routing_strategy config to create a consensus_aware proxyd instance
