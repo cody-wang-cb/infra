@@ -93,12 +93,6 @@ var (
 		Message:       "backend is currently not healthy to serve traffic",
 		HTTPErrorCode: 503,
 	}
-	ErrBlockOutOfRange = &RPCErr{
-		Code:          JSONRPCErrorInternal - 19,
-		Message:       "block is out of range",
-		HTTPErrorCode: 400,
-	}
-
 	ErrRequestBodyTooLarge = &RPCErr{
 		Code:          JSONRPCErrorInternal - 21,
 		Message:       "request body too large",
@@ -729,7 +723,6 @@ type BackendGroup struct {
 	Consensus        *ConsensusPoller
 	FallbackBackends map[string]bool
 	routingStrategy  RoutingStrategy
-	DisableOverwrite bool
 }
 
 func (bg *BackendGroup) GetRoutingStrategy() RoutingStrategy {
@@ -771,7 +764,7 @@ func (bg *BackendGroup) Forward(ctx context.Context, rpcReqs []*RPCReq, isBatch 
 	// When routing_strategy is set to `consensus_aware` the backend group acts as a load balancer
 	// serving traffic from any backend that agrees in the consensus group
 	// We also rewrite block tags to enforce compliance with consensus
-	if bg.Consensus != nil && !bg.DisableOverwrite {
+	if bg.Consensus != nil {
 		rpcReqs, overriddenResponses = bg.OverwriteConsensusResponses(rpcReqs, overriddenResponses, rewrittenReqs)
 	}
 
@@ -1466,9 +1459,7 @@ func (bg *BackendGroup) OverwriteConsensusResponses(rpcReqs []*RPCReq, overridde
 				req:   req,
 				res:   &res,
 			})
-			if errors.Is(err, ErrRewriteBlockOutOfRange) {
-				res.Error = ErrBlockOutOfRange
-			} else if errors.Is(err, ErrRewriteRangeTooLarge) {
+			if errors.Is(err, ErrRewriteRangeTooLarge) {
 				res.Error = ErrInvalidParams(
 					fmt.Sprintf("block range greater than %d max", rctx.maxBlockRange),
 				)

@@ -405,19 +405,6 @@ func (s *Server) HandleRPC(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("x-served-by", servedBy)
 	}
 	setCacheHeader(w, cached)
-	// parsedReq, err := ParseRPCReq(rawBody)
-	// if err != nil {
-	// 	log.Info("error parsing RPC call", "source", "rpc", "err", err)
-	// }
-
-	// Define the expected parameters struct
-    // var params []interface{}
-    // err = json.Unmarshal(parsedReq.Params, &params)
-    // if err != nil {
-    //     fmt.Println("Error unmarshaling params:", err)
-    //     return
-    // }
-	// log.Info("handle RPC", "params", params, "method", parsedReq.Method, "req_id", GetReqID(ctx), "res", backendRes[0], "servedBy", servedBy)
 	writeRPCRes(ctx, w, backendRes[0])
 }
 

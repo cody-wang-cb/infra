@@ -184,6 +184,14 @@
         "number": "0xd1"
       }
     }
+- method: eth_getBlockByNumber
+  block: 0x300
+  response: >
+    {
+      "jsonrpc": "2.0",
+      "id": 67,
+      "result": null
+    }
 - method: debug_getRawReceipts
   block: 0x55
   response: >
