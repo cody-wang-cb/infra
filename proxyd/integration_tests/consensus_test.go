@@ -788,7 +788,6 @@ func TestConsensus(t *testing.T) {
 		require.Equal(t, "0x101", jsonMap[0]["result"].(map[string]interface{})["number"])
 
 		// out of bounds for block 0x300
-		fmt.Println(jsonMap)
 		require.Equal(t, nil, jsonMap[1]["result"])
 
 		// dont rewrite for 0xe1
