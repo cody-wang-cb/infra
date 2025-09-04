@@ -19,6 +19,8 @@ import (
 
 	sw "github.com/ethereum-optimism/infra/proxyd/pkg/avg-sliding-window"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/gorilla/websocket"
@@ -849,6 +851,9 @@ func isValidMulticallTx(rpcReqs []*RPCReq) bool {
 type multicallTuple struct {
 	response    *BackendGroupRPCResponse
 	backendName string
+	txHash      string
+	txStartTime time.Time
+	isDevWallet bool
 }
 
 // Note: rpcReqs should only contain 1 request of 'sendRawTransactions'
@@ -856,6 +861,30 @@ func (bg *BackendGroup) ExecuteMulticall(ctx context.Context, rpcReqs []*RPCReq)
 	// Create ctx without cancel so background tasks process
 	// after original request returns
 	bgCtx := context.WithoutCancel(ctx)
+
+	// Extract transaction info for logging
+	var txHash string
+	var txStartTime time.Time
+	var isDevWallet bool
+
+	if len(rpcReqs) == 1 && rpcReqs[0].Method == "eth_sendRawTransaction" {
+		var params []any
+		if err := json.Unmarshal(rpcReqs[0].Params, &params); err == nil && len(params) == 1 {
+			if txDataHex, ok := params[0].(string); ok {
+				if data, err := hexutil.Decode(txDataHex); err == nil {
+					tx := new(types.Transaction)
+					if err := tx.UnmarshalBinary(data); err == nil {
+						txHash = tx.Hash().Hex()
+						txStartTime = time.Now()
+						if tx.To() != nil && strings.ToLower(tx.To().Hex()) == "0x889766967dd3ff6a0c91b799322d45628e68f8b1" {
+							isDevWallet = true
+							log.Info(fmt.Sprintf("received at proxyd tx: %s, timestamp: %d", txHash, txStartTime.Unix()))
+						}
+					}
+				}
+			}
+		}
+	}
 
 	log.Info("executing multicall routing strategy",
 		"req_id", GetReqID(bgCtx),
@@ -865,7 +894,7 @@ func (bg *BackendGroup) ExecuteMulticall(ctx context.Context, rpcReqs []*RPCReq)
 	ch := make(chan *multicallTuple, len(bg.Backends))
 	for _, backend := range bg.Backends {
 		wg.Add(1)
-		go bg.MulticallRequest(backend, rpcReqs, &wg, bgCtx, ch)
+		go bg.MulticallRequest(backend, rpcReqs, &wg, bgCtx, ch, txHash, txStartTime, isDevWallet)
 	}
 
 	go func() {
@@ -880,7 +909,7 @@ func (bg *BackendGroup) ExecuteMulticall(ctx context.Context, rpcReqs []*RPCReq)
 	return bg.ProcessMulticallResponses(ch, bgCtx)
 }
 
-func (bg *BackendGroup) MulticallRequest(backend *Backend, rpcReqs []*RPCReq, wg *sync.WaitGroup, ctx context.Context, ch chan *multicallTuple) {
+func (bg *BackendGroup) MulticallRequest(backend *Backend, rpcReqs []*RPCReq, wg *sync.WaitGroup, ctx context.Context, ch chan *multicallTuple, txHash string, txStartTime time.Time, isDevWallet bool) {
 	defer wg.Done()
 	log.Debug("forwarding multicall request to backend",
 		"req_id", GetReqID(ctx),
@@ -894,6 +923,9 @@ func (bg *BackendGroup) MulticallRequest(backend *Backend, rpcReqs []*RPCReq, wg
 	multicallResp := &multicallTuple{
 		response:    backendResp,
 		backendName: backend.Name,
+		txHash:      txHash,
+		txStartTime: txStartTime,
+		isDevWallet: isDevWallet,
 	}
 
 	log.Debug("placing multicall response into channel",
@@ -971,6 +1003,13 @@ func (bg *BackendGroup) ProcessMulticallResponses(ch chan *multicallTuple, ctx c
 			"served_by", resp.ServedBy,
 			"backend", backendName,
 		)
+
+		// Log transaction info if available
+		if multicallResp.txHash != "" && multicallResp.isDevWallet {
+			duration := time.Since(multicallResp.txStartTime)
+			log.Info(fmt.Sprintf("tx to dev wallet completed tx: %s, duration: %d", multicallResp.txHash, duration.Milliseconds()))
+		}
+
 		return resp
 	}
 }
