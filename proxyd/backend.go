@@ -766,6 +766,13 @@ func (b *Backend) doForward(ctx context.Context, rpcReqs []*RPCReq, isBatch bool
 		httpReq.Header.Set(name, value)
 	}
 
+	// Send async copy to ingress service
+	go func() {
+		ingressReq, _ := http.NewRequest("POST", "http://localhost:3000", bytes.NewReader(body))
+		ingressReq.Header.Set("content-type", "application/json")
+		http.DefaultClient.Do(ingressReq)
+	}()
+
 	start := time.Now()
 	httpRes, err := b.client.DoLimited(httpReq)
 	if err != nil {
